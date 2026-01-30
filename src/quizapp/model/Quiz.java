@@ -21,8 +21,7 @@ public class Quiz implements Gradable {
         questions.add(question);
     }
 
-    public void startQuiz() {
-        Scanner scanner = new Scanner(System.in);
+    public void startQuiz(Scanner scanner) {
 
         for (Question question : questions) {
             System.out.println(question.getQuestionText());

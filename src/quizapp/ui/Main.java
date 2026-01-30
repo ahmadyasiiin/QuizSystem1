@@ -1,6 +1,7 @@
 package quizapp.ui;
 
 import java.util.Arrays;
+import java.util.Scanner;
 
 import quizapp.model.MultipleChoiceQuestion;
 import quizapp.model.Quiz;
@@ -11,10 +12,10 @@ public class Main {
 
     public static void main(String[] args) {
 
-        // Create quiz
+        Scanner scanner = new Scanner(System.in);
+
         Quiz quiz = new Quiz();
 
-        // Add questions
         quiz.addQuestion(
             new MultipleChoiceQuestion(
                 "Which language is used for Android development?",
@@ -32,10 +33,10 @@ public class Main {
             )
         );
 
-        // Create student
         Student student = new Student("Ahmad");
 
-        // Start quiz
-        student.takeQuiz(quiz);
+        student.takeQuiz(quiz, scanner);
+
+        scanner.close();
     }
 }
