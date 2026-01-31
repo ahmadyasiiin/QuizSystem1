@@ -1,10 +1,18 @@
 package quizapp.model;
 
-/**
- * Difficulty levels for questions.
- */
 public enum Difficulty {
-    EASY,
-    MEDIUM,
-    HARD
+    EASY(5),
+    MEDIUM(10),
+    HARD(20);
+
+    private final int point;
+
+    Difficulty(int point) {
+        this.point = point;
+    }
+
+    public int getPoint() {
+        return point;
+    }
 }
+
