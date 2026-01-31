@@ -11,8 +11,10 @@ public class MultipleChoiceQuestion extends Question {
     private String correctOption;
 
     public MultipleChoiceQuestion(String questionText, int points,
-                                  List<String> options, String correctOption) {
-        super(questionText, points);
+                                  Difficulty difficulty,
+                                  List<String> options,
+                                  String correctOption) {
+        super(questionText, points, difficulty);
         this.options = options;
         this.correctOption = correctOption;
     }

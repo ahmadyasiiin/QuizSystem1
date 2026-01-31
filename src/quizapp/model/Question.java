@@ -7,10 +7,12 @@ public abstract class Question {
 
     protected String questionText;
     protected int points;
+    protected Difficulty difficulty;
 
-    public Question(String questionText, int points) {
+    public Question(String questionText, int points, Difficulty difficulty) {
         this.questionText = questionText;
         this.points = points;
+        this.difficulty = difficulty;
     }
 
     public String getQuestionText() {
@@ -19,6 +21,10 @@ public abstract class Question {
 
     public int getPoints() {
         return points;
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
     }
 
     public abstract boolean checkAnswer(String answer);
