@@ -2,9 +2,6 @@ package quizapp.test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.ByteArrayInputStream;
-import java.util.Scanner;
-
 import org.junit.jupiter.api.Test;
 
 import quizapp.model.*;
@@ -14,33 +11,31 @@ class QuizTest {
     @Test
     void testQuizScoreCalculation() {
 
-        Quiz quiz = new Quiz(60);
+        Quiz quiz = new Quiz("Test Quiz");
 
-        quiz.addQuestion(
-            new TrueFalseQuestion(
+        Question q1 = new TrueFalseQuestion(
                 "Java is platform independent",
-                10,
-                Difficulty.EASY,
-                true
-            )
+                true,
+                Difficulty.EASY
         );
 
-        quiz.addQuestion(
-            new TrueFalseQuestion(
+        Question q2 = new TrueFalseQuestion(
                 "Java supports multiple inheritance",
-                20,
-                Difficulty.MEDIUM,
-                false
-            )
+                false,
+                Difficulty.MEDIUM
         );
 
-        // Simulate user input
-        String fakeInput = "true\nfalse\n";
-        Scanner scanner =
-            new Scanner(new ByteArrayInputStream(fakeInput.getBytes()));
+        quiz.addQuestion(q1);
+        quiz.addQuestion(q2);
 
-        quiz.startQuiz(scanner);
+        // simulate correct answers
+        quiz.answerQuestion(q1, "true");
+        quiz.answerQuestion(q2, "false");
 
-        assertEquals(30, quiz.getScore());
+        int expectedScore =
+                Difficulty.EASY.getPoint()
+              + Difficulty.MEDIUM.getPoint();
+
+        assertEquals(expectedScore, quiz.calculateScore());
     }
 }
