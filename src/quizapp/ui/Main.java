@@ -1,13 +1,14 @@
 package quizapp.ui;
 
 import quizapp.model.*;
+import quizapp.util.ResultManager;
 
 import java.util.Scanner;
 import java.util.concurrent.*;
 
 public class Main {
 
-    private static final int TIME_LIMIT = 20;
+    private static final int TIME_LIMIT = 20; // seconds
 
     public static void main(String[] args) {
 
@@ -15,9 +16,12 @@ public class Main {
 
         System.out.println("=================================");
         System.out.println("        QUIZ SİSTEMİ");
-        System.out.println("=================================\n");
+        System.out.println("=================================");
 
-        System.out.print("Adınızı giriniz: ");
+        
+        ResultManager.printAllResults();
+
+        System.out.print("\nAdınızı giriniz: ");
         String name = scanner.nextLine();
         Student student = new Student(name);
 
@@ -42,28 +46,28 @@ public class Main {
 
         System.out.println("\nQuiz başlıyor...\n");
 
-        int number = 1;
+        int questionNumber = 1;
 
-        for (Question q : quiz.getQuestions()) {
+        for (Question question : quiz.getQuestions()) {
 
             System.out.println("----------------------------------");
-            System.out.println("Soru " + number++);
-            System.out.println(q.getText());
-            System.out.println("Zorluk: " + q.getDifficulty()
-                    + " | Puan: " + q.getDifficulty().getPoint());
+            System.out.println("Soru " + questionNumber++);
+            System.out.println(question.getText());
+            System.out.println("Zorluk: " + question.getDifficulty()
+                    + " | Puan: " + question.getDifficulty().getPoint());
             System.out.println("⏳ Süre: " + TIME_LIMIT + " saniye");
 
             String answer = getAnswerWithCountdown(scanner);
 
             if (answer == null) {
-                System.out.println("\n❌ Süre doldu! Puan alamadınız.");
+                System.out.println("\n❌ Süre doldu! Cevap alınamadı.");
             } else {
-                quiz.answerQuestion(q, answer);
+                quiz.answerQuestion(question, answer);
             }
         }
 
-        int score = quiz.calculateScore();
-        student.addScore(score);
+        int totalScore = quiz.calculateScore();
+        student.addScore(totalScore);
 
         System.out.println("\n=================================");
         System.out.println("SONUÇ");
@@ -71,10 +75,13 @@ public class Main {
         System.out.println("Öğrenci: " + student.getName());
         System.out.println("Toplam Puan: " + student.getTotalScore());
 
+        
+        ResultManager.saveResult(student.getName(), student.getTotalScore());
+
         scanner.close();
     }
 
-    // ⏳ إدخال + عدّ تنازلي مرئي
+   
     private static String getAnswerWithCountdown(Scanner scanner) {
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -93,11 +100,11 @@ public class Main {
             } catch (InterruptedException ignored) {}
         };
 
-        Future<String> answerFuture = executor.submit(inputTask);
+        Future<String> futureAnswer = executor.submit(inputTask);
         executor.submit(countdownTask);
 
         try {
-            return answerFuture.get(TIME_LIMIT, TimeUnit.SECONDS);
+            return futureAnswer.get(TIME_LIMIT, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             return null;
         } catch (Exception e) {
@@ -108,27 +115,28 @@ public class Main {
         }
     }
 
-    private static void loadQuestions(Quiz quiz, Difficulty d) {
+    private static void loadQuestions(Quiz quiz, Difficulty difficulty) {
 
-        if (d == Difficulty.EASY) {
+        if (difficulty == Difficulty.EASY) {
             quiz.addQuestion(new TrueFalseQuestion(
-                    "Java bir programlama dili midir?", true, d));
+                    "Java bir programlama dili midir?",
+                    true,
+                    difficulty));
             quiz.addQuestion(new TrueFalseQuestion(
-                    "2 + 2 = 4 müdür?", true, d));
+                    "2 + 2 = 4 müdür?",
+                    true,
+                    difficulty));
         }
 
-        if (d == Difficulty.MEDIUM) {
+        if (difficulty == Difficulty.MEDIUM) {
             quiz.addQuestion(new TrueFalseQuestion(
-                    "Java’da interface vardır.", true, d));
+                    "Java’da interface vardır.",
+                    true,
+                    difficulty));
             quiz.addQuestion(new TrueFalseQuestion(
-                    "String primitive bir veri tipi midir?", false, d));
+                    "String primitive bir veri tipi midir?",
+                    false,
+                    difficulty));
         }
-
-        if (d == Difficulty.HARD) {
-            quiz.addQuestion(new TrueFalseQuestion(
-                    "Java çoklu kalıtımı destekler.", false, d));
-            quiz.addQuestion(new TrueFalseQuestion(
-                    "JVM bytecode’u çalıştırır.", true, d));
+        }   
         }
-    }
-}
