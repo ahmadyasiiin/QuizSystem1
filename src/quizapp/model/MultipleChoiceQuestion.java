@@ -2,19 +2,14 @@ package quizapp.model;
 
 import java.util.List;
 
-/**
- * Represents a multiple choice question.
- */
 public class MultipleChoiceQuestion extends Question {
 
     private List<String> options;
     private String correctOption;
 
-    public MultipleChoiceQuestion(String questionText, int points,
-                                  Difficulty difficulty,
-                                  List<String> options,
-                                  String correctOption) {
-        super(questionText, points, difficulty);
+    public MultipleChoiceQuestion(String text, List<String> options,
+                                  String correctOption, Difficulty difficulty) {
+        super(text, difficulty);
         this.options = options;
         this.correctOption = correctOption;
     }
@@ -24,7 +19,7 @@ public class MultipleChoiceQuestion extends Question {
     }
 
     @Override
-    public boolean checkAnswer(String answer) {
-        return correctOption.equalsIgnoreCase(answer);
+    public boolean checkAnswer(Object answer) {
+        return correctOption.equalsIgnoreCase(answer.toString());
     }
 }

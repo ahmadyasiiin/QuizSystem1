@@ -1,60 +1,47 @@
 package quizapp.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
-/**
- * Represents a quiz consisting of multiple questions.
- */
-public class Quiz implements Gradable {
+public class Quiz {
 
+    private String title;
     private List<Question> questions;
-    private int totalScore;
-    private long timeLimitMillis;
+    private Map<Question, Object> answers;
 
-    public Quiz(long timeLimitSeconds) {
-        questions = new ArrayList<>();
-        totalScore = 0;
-        this.timeLimitMillis = timeLimitSeconds * 1000;
+    public Quiz(String title) {
+        this.title = title;
+        this.questions = new ArrayList<>();
+        this.answers = new HashMap<>();
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public void addQuestion(Question question) {
         questions.add(question);
     }
 
-    public void startQuiz(Scanner scanner) {
-
-        Collections.shuffle(questions); // 🔀 shuffle
-
-        long startTime = System.currentTimeMillis();
-
-        for (Question question : questions) {
-
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            if (elapsedTime > timeLimitMillis) {
-                System.out.println("\n⏰ Time is up!");
-                break;
-            }
-
-            System.out.println("[" + question.getDifficulty() + "] "
-                    + question.getQuestionText());
-            System.out.print("Your answer: ");
-
-            String answer = scanner.nextLine();
-
-            if (question.checkAnswer(answer)) {
-                totalScore += question.getPoints();
-                System.out.println("Correct! +" + question.getPoints() + "\n");
-            } else {
-                System.out.println("Wrong!\n");
-            }
-        }
+    public List<Question> getQuestions() {
+        return questions;
     }
 
-    @Override
-    public int getScore() {
-        return totalScore;
+    public void answerQuestion(Question question, Object answer) {
+        answers.put(question, answer);
+    }
+
+    public int calculateScore() {
+        int score = 0;
+        for (Question q : questions) {
+            Object ans = answers.get(q);
+            if (ans != null && q.checkAnswer(ans)) {
+                score += q.getDifficulty().getPoint();
+            }
+        }
+        return score;
+    }
+
+    public void shuffleQuestions() {
+        Collections.shuffle(questions);
     }
 }

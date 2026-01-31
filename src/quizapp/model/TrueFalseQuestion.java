@@ -1,21 +1,22 @@
 package quizapp.model;
 
-/**
- * Represents a true/false question.
- */
 public class TrueFalseQuestion extends Question {
 
     private boolean correctAnswer;
 
-    public TrueFalseQuestion(String questionText, int points,
-                             Difficulty difficulty,
-                             boolean correctAnswer) {
-        super(questionText, points, difficulty);
+    public TrueFalseQuestion(String text, boolean correctAnswer, Difficulty difficulty) {
+        super(text, difficulty);
         this.correctAnswer = correctAnswer;
     }
 
     @Override
-    public boolean checkAnswer(String answer) {
-        return Boolean.parseBoolean(answer) == correctAnswer;
+    public boolean checkAnswer(Object answer) {
+        if (answer instanceof Boolean) {
+            return correctAnswer == (Boolean) answer;
+        }
+        if (answer instanceof String) {
+            return correctAnswer == Boolean.parseBoolean(answer.toString());
+        }
+        return false;
     }
 }
