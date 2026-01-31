@@ -11,26 +11,26 @@ class TrueFalseQuestionTest {
 
     @Test
     void testCorrectTrueAnswer() {
+
         TrueFalseQuestion question =
-            new TrueFalseQuestion(
-                "Java is object oriented",
-                5,
-                Difficulty.EASY,
-                true
-            );
+                new TrueFalseQuestion(
+                        "Java is object oriented",
+                        true,
+                        Difficulty.EASY
+                );
 
         assertTrue(question.checkAnswer("true"));
     }
 
     @Test
     void testWrongFalseAnswer() {
+
         TrueFalseQuestion question =
-            new TrueFalseQuestion(
-                "Java supports multiple inheritance",
-                5,
-                Difficulty.MEDIUM,
-                false
-            );
+                new TrueFalseQuestion(
+                        "Java supports multiple inheritance",
+                        false,
+                        Difficulty.MEDIUM
+                );
 
         assertFalse(question.checkAnswer("true"));
     }
