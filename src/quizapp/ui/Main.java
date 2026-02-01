@@ -6,10 +6,21 @@ import quizapp.util.ResultManager;
 import java.util.Scanner;
 import java.util.concurrent.*;
 
+/**
+ * Uygulamanın giriş noktasıdır.
+ * Kullanıcıdan bilgi alır, quiz'i başlatır ve sonucu ekranda gösterir.
+ * Sonuçlar ayrıca metin dosyasına kaydedilir.
+ */
 public class Main {
 
-    private static final int TIME_LIMIT = 20; // seconds
+    /** Her soru için süre limiti (saniye). */
+    private static final int TIME_LIMIT = 20;
 
+    /**
+     * Programı başlatır.
+     *
+     * @param args komut satırı argümanları
+     */
     public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
@@ -18,7 +29,7 @@ public class Main {
         System.out.println("        QUIZ SİSTEMİ");
         System.out.println("=================================");
 
-        
+        // Önceki sonuçları göster
         ResultManager.printAllResults();
 
         System.out.print("\nAdınızı giriniz: ");
@@ -75,13 +86,19 @@ public class Main {
         System.out.println("Öğrenci: " + student.getName());
         System.out.println("Toplam Puan: " + student.getTotalScore());
 
-        
+        // Sonucu dosyaya kaydet
         ResultManager.saveResult(student.getName(), student.getTotalScore());
 
         scanner.close();
     }
 
-   
+    /**
+     * Kullanıcıdan cevap alır ve aynı anda geri sayım gösterir.
+     * Süre dolarsa null döner.
+     *
+     * @param scanner kullanıcı girişi için Scanner
+     * @return kullanıcının cevabı, süre dolarsa null
+     */
     private static String getAnswerWithCountdown(Scanner scanner) {
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -97,7 +114,9 @@ public class Main {
                     System.out.print("\r⏳ Kalan süre: " + i + " saniye ");
                     Thread.sleep(1000);
                 }
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+                // süre dolduğunda veya giriş alındığında thread kesilebilir
+            }
         };
 
         Future<String> futureAnswer = executor.submit(inputTask);
@@ -115,6 +134,12 @@ public class Main {
         }
     }
 
+    /**
+     * Seçilen zorluğa göre örnek soruları quiz'e ekler.
+     *
+     * @param quiz soru eklenecek quiz
+     * @param difficulty seçilen zorluk seviyesi
+     */
     private static void loadQuestions(Quiz quiz, Difficulty difficulty) {
 
         if (difficulty == Difficulty.EASY) {
@@ -126,9 +151,7 @@ public class Main {
                     "2 + 2 = 4 müdür?",
                     true,
                     difficulty));
-        }
-
-        if (difficulty == Difficulty.MEDIUM) {
+        } else if (difficulty == Difficulty.MEDIUM) {
             quiz.addQuestion(new TrueFalseQuestion(
                     "Java’da interface vardır.",
                     true,
@@ -137,6 +160,15 @@ public class Main {
                     "String primitive bir veri tipi midir?",
                     false,
                     difficulty));
+        } else { // HARD
+            quiz.addQuestion(new TrueFalseQuestion(
+                    "Java çoklu kalıtımı (multiple inheritance) sınıflarla destekler.",
+                    false,
+                    difficulty));
+            quiz.addQuestion(new TrueFalseQuestion(
+                    "JVM bytecode'u çalıştırır.",
+                    true,
+                    difficulty));
         }
-        }   
-        }
+    }
+}
