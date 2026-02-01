@@ -10,8 +10,16 @@ import org.junit.jupiter.api.Test;
 import quizapp.model.Difficulty;
 import quizapp.model.MultipleChoiceQuestion;
 
+/**
+ * MultipleChoiceQuestion sınıfı için yazılmış birim testlerdir.
+ * Doğru ve yanlış cevapların doğru şekilde
+ * kontrol edilip edilmediği test edilir.
+ */
 class MultipleChoiceQuestionTest {
 
+    /**
+     * Doğru cevap verildiğinde true dönmesi test edilir.
+     */
     @Test
     void testCorrectAnswer() {
 
@@ -29,6 +37,9 @@ class MultipleChoiceQuestionTest {
         assertTrue(question.checkAnswer("Paris"));
     }
 
+    /**
+     * Yanlış cevap verildiğinde false dönmesi test edilir.
+     */
     @Test
     void testWrongAnswer() {
 
