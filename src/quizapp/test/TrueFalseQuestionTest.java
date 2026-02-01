@@ -7,8 +7,16 @@ import org.junit.jupiter.api.Test;
 import quizapp.model.Difficulty;
 import quizapp.model.TrueFalseQuestion;
 
+/**
+ * TrueFalseQuestion sınıfı için yazılmış birim testlerdir.
+ * Soruların doğru ve yanlış cevapları doğru şekilde
+ * kontrol edip etmediği test edilir.
+ */
 class TrueFalseQuestionTest {
 
+    /**
+     * Doğru cevabın true olduğu durum test edilir.
+     */
     @Test
     void testCorrectTrueAnswer() {
 
@@ -22,6 +30,9 @@ class TrueFalseQuestionTest {
         assertTrue(question.checkAnswer("true"));
     }
 
+    /**
+     * Yanlış cevap verilen durum test edilir.
+     */
     @Test
     void testWrongFalseAnswer() {
 
