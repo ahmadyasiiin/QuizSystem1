@@ -4,15 +4,26 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Quiz sonuçlarının dosya üzerinde
+ * kaydedilmesi ve okunmasından sorumlu yardımcı sınıftır.
+ */
 public class ResultManager {
 
+    /** Sonuçların kaydedileceği dosya yolu */
     private static final String FILE_NAME = "results/results.txt";
 
+    /**
+     * Öğrencinin sonucunu metin dosyasına kaydeder.
+     *
+     * @param studentName öğrencinin adı
+     * @param score öğrencinin aldığı puan
+     */
     public static void saveResult(String studentName, int score) {
 
         try {
             File file = new File(FILE_NAME);
-            file.getParentFile().mkdirs(); 
+            file.getParentFile().mkdirs();
 
             BufferedWriter writer =
                     new BufferedWriter(new FileWriter(file, true));
@@ -29,6 +40,9 @@ public class ResultManager {
         }
     }
 
+    /**
+     * Daha önce kaydedilmiş tüm quiz sonuçlarını ekrana yazdırır.
+     */
     public static void printAllResults() {
 
         File file = new File(FILE_NAME);
