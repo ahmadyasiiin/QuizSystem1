@@ -3,6 +3,7 @@ package quizapp.ui;
 import quizapp.model.*;
 import quizapp.util.ResultManager;
 
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
 
@@ -29,12 +30,51 @@ public class Main {
         System.out.println("        QUIZ SİSTEMİ");
         System.out.println("=================================");
 
-        // Önceki sonuçları göster
+        // Önceki sonuçları göster (program açılışında bir kez)
         ResultManager.printAllResults();
 
         System.out.print("\nAdınızı giriniz: ");
         String name = scanner.nextLine();
         Student student = new Student(name);
+
+        boolean playAgain = true;
+
+        while (playAgain) {
+
+            Difficulty difficulty = askDifficulty(scanner);
+
+            Quiz quiz = new Quiz("Genel Bilgi Quiz");
+            loadQuestions(quiz, difficulty);
+            quiz.shuffleQuestions();
+
+            System.out.println("\nQuiz başlıyor...\n");
+
+            runQuiz(scanner, quiz);
+
+            int totalScore = quiz.calculateScore();
+            student.addScore(totalScore);
+
+            System.out.println("\n=================================");
+            System.out.println("SONUÇ");
+            System.out.println("=================================");
+            System.out.println("Öğrenci: " + student.getName());
+            System.out.println("Bu Quiz Puanı: " + totalScore);
+            System.out.println("Toplam Puan: " + student.getTotalScore());
+
+            // Sonucu dosyaya kaydet
+            ResultManager.saveResult(student.getName(), totalScore);
+
+            playAgain = askPlayAgain(scanner);
+        }
+
+        System.out.println("\nProgram kapatılıyor...");
+        scanner.close();
+    }
+
+    /**
+     * Kullanıcıdan zorluk seviyesi seçmesini ister.
+     */
+    private static Difficulty askDifficulty(Scanner scanner) {
 
         System.out.println("\nZorluk Seviyesi Seçiniz:");
         System.out.println("1 - EASY   (" + Difficulty.EASY.getPoint() + " puan)");
@@ -42,20 +82,24 @@ public class Main {
         System.out.println("3 - HARD   (" + Difficulty.HARD.getPoint() + " puan)");
         System.out.print("Seçiminiz: ");
 
-        int choice = scanner.nextInt();
-        scanner.nextLine();
+        int choice;
+        try {
+            choice = Integer.parseInt(scanner.nextLine().trim());
+        } catch (Exception e) {
+            choice = 1;
+        }
 
-        Difficulty difficulty = switch (choice) {
+        return switch (choice) {
             case 2 -> Difficulty.MEDIUM;
             case 3 -> Difficulty.HARD;
             default -> Difficulty.EASY;
         };
+    }
 
-        Quiz quiz = new Quiz("Genel Bilgi Quiz");
-        loadQuestions(quiz, difficulty);
-        quiz.shuffleQuestions();
-
-        System.out.println("\nQuiz başlıyor...\n");
+    /**
+     * Quiz sorularını sırayla sorar. Her sorudan sonra doğru/yanlış bilgisini gösterir.
+     */
+    private static void runQuiz(Scanner scanner, Quiz quiz) {
 
         int questionNumber = 1;
 
@@ -65,46 +109,51 @@ public class Main {
             System.out.println("Soru " + questionNumber++);
             System.out.println(question.getText());
             System.out.println("Zorluk: " + question.getDifficulty()
-                    + " | Puan: " + question.getDifficulty().getPoint());
+                    + " | Puan: " + question.getPoints());
             System.out.println("⏳ Süre: " + TIME_LIMIT + " saniye");
 
-            String answer = getAnswerWithCountdown(scanner);
+            // Çoktan seçmeli soru ise seçenekleri göster
+            if (question instanceof MultipleChoiceQuestion mcq) {
+                List<String> opts = mcq.getOptions();
+                for (int i = 0; i < opts.size(); i++) {
+                    System.out.println((i + 1) + ") " + opts.get(i));
+                }
+            }
+
+            String answer = getAnswerWithCountdown(scanner, question);
 
             if (answer == null) {
-                System.out.println("\n❌ Süre doldu! Cevap alınamadı.");
+                System.out.println("\n❌ Süre doldu! Cevap alınamadı. (0 puan)");
+                continue;
+            }
+
+            // Cevabı kaydet
+            quiz.answerQuestion(question, answer);
+
+            // Anında doğru/yanlış göster
+            boolean correct = question.checkAnswer(answer);
+            if (correct) {
+                System.out.println("✅ Doğru! (+" + question.getPoints() + " puan)");
             } else {
-                quiz.answerQuestion(question, answer);
+                System.out.println("❌ Yanlış! (+0 puan)");
             }
         }
-
-        int totalScore = quiz.calculateScore();
-        student.addScore(totalScore);
-
-        System.out.println("\n=================================");
-        System.out.println("SONUÇ");
-        System.out.println("=================================");
-        System.out.println("Öğrenci: " + student.getName());
-        System.out.println("Toplam Puan: " + student.getTotalScore());
-
-        // Sonucu dosyaya kaydet
-        ResultManager.saveResult(student.getName(), student.getTotalScore());
-
-        scanner.close();
     }
 
     /**
      * Kullanıcıdan cevap alır ve aynı anda geri sayım gösterir.
      * Süre dolarsa null döner.
-     *
-     * @param scanner kullanıcı girişi için Scanner
-     * @return kullanıcının cevabı, süre dolarsa null
      */
-    private static String getAnswerWithCountdown(Scanner scanner) {
+    private static String getAnswerWithCountdown(Scanner scanner, Question question) {
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
         Callable<String> inputTask = () -> {
-            System.out.print("\nCevabınız (true/false): ");
+            if (question instanceof MultipleChoiceQuestion) {
+                System.out.print("\nCevabınız (seçenek yazın veya 1/2/3...): ");
+            } else {
+                System.out.print("\nCevabınız (true/false): ");
+            }
             return scanner.nextLine();
         };
 
@@ -123,7 +172,22 @@ public class Main {
         executor.submit(countdownTask);
 
         try {
-            return futureAnswer.get(TIME_LIMIT, TimeUnit.SECONDS);
+            String raw = futureAnswer.get(TIME_LIMIT, TimeUnit.SECONDS);
+            System.out.println();
+
+            // Eğer çoktan seçmeli ise "1/2/3" girilirse seçeneğe çevir
+            if (question instanceof MultipleChoiceQuestion mcq) {
+                String trimmed = raw == null ? "" : raw.trim();
+                if (trimmed.matches("\\d+")) {
+                    int idx = Integer.parseInt(trimmed) - 1;
+                    List<String> opts = mcq.getOptions();
+                    if (idx >= 0 && idx < opts.size()) {
+                        return opts.get(idx);
+                    }
+                }
+            }
+
+            return raw;
         } catch (TimeoutException e) {
             return null;
         } catch (Exception e) {
@@ -135,10 +199,16 @@ public class Main {
     }
 
     /**
+     * Kullanıcıya tekrar quiz çözmek isteyip istemediğini sorar.
+     */
+    private static boolean askPlayAgain(Scanner scanner) {
+        System.out.print("\nTekrar quiz çözmek ister misiniz? (e/h): ");
+        String input = scanner.nextLine().trim().toLowerCase();
+        return input.equals("e") || input.equals("evet") || input.equals("y") || input.equals("yes");
+    }
+
+    /**
      * Seçilen zorluğa göre örnek soruları quiz'e ekler.
-     *
-     * @param quiz soru eklenecek quiz
-     * @param difficulty seçilen zorluk seviyesi
      */
     private static void loadQuestions(Quiz quiz, Difficulty difficulty) {
 

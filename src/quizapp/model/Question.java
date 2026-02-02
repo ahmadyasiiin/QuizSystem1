@@ -4,7 +4,7 @@ package quizapp.model;
  * Bu soyut sınıf, tüm soru tipleri için temel yapıyı temsil eder.
  * Her soru bir metne ve zorluk seviyesine sahiptir.
  */
-public abstract class Question {
+public abstract class Question implements Gradable {
 
     /** Soru metni */
     protected String text;
@@ -39,6 +39,17 @@ public abstract class Question {
      */
     public Difficulty getDifficulty() {
         return difficulty;
+    }
+
+    /**
+     * Sorunun puanını döndürür.
+     * Puan değeri Difficulty üzerinden alınır.
+     *
+     * @return soru puanı
+     */
+    @Override
+    public int getPoints() {
+        return difficulty.getPoint();
     }
 
     /**
